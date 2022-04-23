@@ -1,0 +1,43 @@
+name: PR Comment with Changes Breakdown
+description: 'Comment on PR with a short summary of changes. They are classified according to your config.'
+author: 'Boris Lykah'
+
+inputs:
+  diff-stat:
+    description: 'The JSON object describing changes. This is the "stat" output of lykahb/paths-filter.'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: peter-evans/find-comment@v1
+      id: find-comment
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-author: 'github-actions[bot]'
+        body-includes: '<!-- Paths Filter with Diff Stat -->'
+    - id: make-comment-body
+      shell: bash
+      run: |
+        JQ_FILTER='to_entries | group_by(.key=="other") | flatten | .[] | select (.value.fileCount > 0) | "| \(.key) | \(.value.fileCount) | \(.value.additionCount) | \(.value.deletionCount) |"'
+        COMMENT_BODY=$(echo '${{ inputs.diff-stat }}' | jq --raw-output "$JQ_FILTER")
+        COMMENT_BODY="${COMMENT_BODY//'%'/'%25'}"
+        COMMENT_BODY="${COMMENT_BODY//$'\n'/'%0A'}"
+        COMMENT_BODY="${COMMENT_BODY//$'\r'/'%0D'}"
+        echo "::set-output name=comment_body::$COMMENT_BODY"
+    - uses: peter-evans/create-or-update-comment@v1
+      id: create-or-update-comment
+      with:
+        comment-id: ${{ steps.find-comment.outputs.comment-id }}
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          <!-- Paths Filter with Diff Stat -->
+
+          | Group  | Files changed | Additions | Deletions |
+          | ------ | ------------- | --------- | --------- |
+          ${{ steps.make-comment-body.outputs.comment_body }}
+        edit-mode: replace
+
+branding:
+  color: blue
+  icon: message-square

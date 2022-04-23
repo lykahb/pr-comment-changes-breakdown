@@ -1,0 +1,26 @@
+name: "Comment with Changes Breakdown"
+on:
+  pull_request:
+    branches:
+      - master
+      - '**'
+  push:
+
+jobs:
+  comment:
+    if: github.event.pull_request
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: lykahb/paths-filter@v2
+      id: filter
+      with:
+        stat: json
+        filters: |
+          src:
+            - action.yml
+          docs:
+            - "**/*.md"
+    - uses: ./
+      with:
+        diff-stat: ${{ steps.filter.outputs.stat }}
