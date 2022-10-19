@@ -10,7 +10,7 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - uses: peter-evans/find-comment@v1
+    - uses: peter-evans/find-comment@v2
       id: find-comment
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -25,7 +25,7 @@ runs:
         COMMENT_BODY="${COMMENT_BODY//$'\n'/'%0A'}"
         COMMENT_BODY="${COMMENT_BODY//$'\r'/'%0D'}"
         echo "::set-output name=comment_body::$COMMENT_BODY"
-    - uses: peter-evans/create-or-update-comment@v1
+    - uses: peter-evans/create-or-update-comment@v2
       id: create-or-update-comment
       with:
         comment-id: ${{ steps.find-comment.outputs.comment-id }}
