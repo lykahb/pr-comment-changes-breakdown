@@ -5,7 +5,7 @@ A breakdown tells reviewer at a glance what the changes are. Does the bulk of th
 ## Example usage
 
 ``` yaml
-- uses: actions/checkout@v2
+- uses: actions/checkout@v3
 - uses: lykahb/paths-filter@v2
   id: filter
   with:
