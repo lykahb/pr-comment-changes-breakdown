@@ -7,10 +7,10 @@ inputs:
     description: 'The JSON object describing changes. This is the "stat" output of lykahb/paths-filter.'
     required: true
   minimum-files:
-    description: 'The minimum number of files that must change before a comment is posted'
+    description: 'There minimum number of files that must change before a comment is posted. If both minimum-files and minimum-lines are set, the conditions for both must be met before a comment is posted.'
     default: 0
   minimum-lines:
-    description: 'The minimum number of lines of code that must change before a comment is posted'
+    description: 'The minimum number of lines of code that must change before a comment is posted. If both minimum-files and minimum-lines are set, the conditions for both must be met before a comment is posted.'
     default: 0
 
 runs:
