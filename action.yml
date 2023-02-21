@@ -6,17 +6,29 @@ inputs:
   diff-stat:
     description: 'The JSON object describing changes. This is the "stat" output of lykahb/paths-filter.'
     required: true
+  minimum-files:
+    description: 'There minimum number of files that must change before a comment is posted. If both minimum-files and minimum-lines are set, the conditions for both must be met before a comment is posted.'
+    default: 0
+  minimum-lines:
+    description: 'The minimum number of lines of code that must change before a comment is posted. If both minimum-files and minimum-lines are set, the conditions for both must be met before a comment is posted.'
+    default: 0
 
 runs:
   using: 'composite'
   steps:
-    - uses: peter-evans/find-comment@v2
+    - id: condition
+      shell: bash
+      run: |
+        echo "passed=$(jq 'to_entries | map(.value) | (map(.additionCount + .deletionCount) | ${{ inputs.minimum-lines }} <= add) and (map (.fileCount) | ${{ inputs.minimum-files }} <= add)' <<< '${{ inputs.diff-stat }}')" >> "${GITHUB_OUTPUT}"
+    - if: steps.condition.outputs.passed
+      uses: peter-evans/find-comment@v2
       id: find-comment
       with:
         issue-number: ${{ github.event.pull_request.number }}
         comment-author: 'github-actions[bot]'
         body-includes: '<!-- Paths Filter with Diff Stat -->'
-    - id: make-comment-body
+    - if: steps.condition.outputs.passed
+      id: make-comment-body
       shell: bash
       run: |
         JQ_FILTER='to_entries | group_by(.key=="other") | flatten | .[] | select (.value.fileCount > 0) | "| \(.key) | \(.value.fileCount) | \(.value.additionCount) | \(.value.deletionCount) |"'
@@ -25,7 +37,8 @@ runs:
         COMMENT_BODY="${COMMENT_BODY//$'\n'/'%0A'}"
         COMMENT_BODY="${COMMENT_BODY//$'\r'/'%0D'}"
         echo "::set-output name=comment_body::$COMMENT_BODY"
-    - uses: peter-evans/create-or-update-comment@v2
+    - if: steps.condition.outputs.passed
+      uses: peter-evans/create-or-update-comment@v2
       id: create-or-update-comment
       with:
         comment-id: ${{ steps.find-comment.outputs.comment-id }}
