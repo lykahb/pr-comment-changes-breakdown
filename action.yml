@@ -33,10 +33,9 @@ runs:
       run: |
         JQ_FILTER='to_entries | group_by(.key=="other") | flatten | .[] | select (.value.fileCount > 0) | "| \(.key) | \(.value.fileCount) | \(.value.additionCount) | \(.value.deletionCount) |"'
         COMMENT_BODY=$(echo '${{ inputs.diff-stat }}' | jq --raw-output "$JQ_FILTER")
-        COMMENT_BODY="${COMMENT_BODY//'%'/'%25'}"
-        COMMENT_BODY="${COMMENT_BODY//$'\n'/'%0A'}"
-        COMMENT_BODY="${COMMENT_BODY//$'\r'/'%0D'}"
-        echo "::set-output name=comment_body::$COMMENT_BODY"
+        echo "comment_body<<PR_COMMENT_EOF" >> $GITHUB_OUTPUT
+        echo "$COMMENT_BODY" >> $GITHUB_OUTPUT
+        echo "PR_COMMENT_EOF" >> $GITHUB_OUTPUT
     - if: steps.condition.outputs.passed
       uses: peter-evans/create-or-update-comment@v2
       id: create-or-update-comment
