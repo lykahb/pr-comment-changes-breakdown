@@ -11,8 +11,8 @@ jobs:
     if: github.event.pull_request
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: lykahb/paths-filter@v2
+    - uses: actions/checkout@v4
+    - uses: MercuryTechnologies/paths-filter@28cec18b46897a4b31b6003a92d5dcda39c9078f
       id: filter
       with:
         stat: json

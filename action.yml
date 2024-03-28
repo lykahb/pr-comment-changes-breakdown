@@ -21,7 +21,7 @@ runs:
       run: |
         echo "passed=$(jq 'to_entries | map(.value) | (map(.additionCount + .deletionCount) | ${{ inputs.minimum-lines }} <= add) and (map (.fileCount) | ${{ inputs.minimum-files }} <= add)' <<< '${{ inputs.diff-stat }}')" >> "${GITHUB_OUTPUT}"
     - if: steps.condition.outputs.passed == 'true'
-      uses: peter-evans/find-comment@v2
+      uses: peter-evans/find-comment@v3
       id: find-comment
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -37,7 +37,7 @@ runs:
         echo "$COMMENT_BODY" >> $GITHUB_OUTPUT
         echo "PR_COMMENT_EOF" >> $GITHUB_OUTPUT
     - if: steps.condition.outputs.passed == 'true'
-      uses: peter-evans/create-or-update-comment@v2
+      uses: peter-evans/create-or-update-comment@v4
       id: create-or-update-comment
       with:
         comment-id: ${{ steps.find-comment.outputs.comment-id }}
